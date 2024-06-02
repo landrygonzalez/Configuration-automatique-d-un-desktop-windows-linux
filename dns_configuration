@@ -10,7 +10,6 @@ $interfaces_up = Get-NetAdapter -Name * | Where-Object Status -match "Up"
 $index_interfaces_up = $interfaces_up.ifIndex
 
 # Demande à l’utilisateur d’Inscrire le numéro d’index de l’interface UP à modifier.
-
 foreach ($i in $interfaces_up){
     Write-host $i.ifIndex "-" $i.Name
 }
