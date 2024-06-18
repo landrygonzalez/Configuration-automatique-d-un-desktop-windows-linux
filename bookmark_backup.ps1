@@ -23,5 +23,14 @@ if (Test-Path $firefoxBookmarksPath) {
     Write-Warning "Fichier de signets Firefox introuvable : $firefoxBookmarksPath"
 }
 
+# Vérifier si le fichier de signets Edge existe
+if (Test-Path $edgeBookmarksPath) {
+    # Sauvegarder les signets Edge
+    Write-Host "Sauvegarde des signets Edge..."
+    Copy-Item -Path $edgeBookmarksPath -Destination "C:\Users\$currentUserName\Documents\EdgeBookmarks.html" -Force
+} else {
+    Write-Warning "Fichier de signets Edge introuvable : $edgeBookmarksPath"
+}
+
 # Fin du script
 Write-Host "Sauvegarde des signets terminée."
