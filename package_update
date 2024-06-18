@@ -1,0 +1,22 @@
+winget update --all -h
+
+<#
+$packages = winget list
+$packagesWithUpdates = @()
+$packages = $packages | Select-Object -Skip 1
+
+foreach ($package in $packages) {
+    # Diviser la ligne en colonnes
+    $columns = $package -split '\s{2,}'  # Split by two or more spaces
+
+    # Vérifier si la colonne "Disponible" contient une valeur
+    if ($columns.Length -ge 4 -and $columns[3] -ne '' -and $columns[3] -ne "winget") {
+        # Ajouter le package à la liste des packages avec mises à jour disponibles
+        $packagesWithUpdates += $package
+    }
+}
+
+$var = $packagesWithUpdates | ForEach-Object { Write-Output $_.Nom }
+
+echo $var 
+#>
