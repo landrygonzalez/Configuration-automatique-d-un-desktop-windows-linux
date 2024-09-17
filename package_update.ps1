@@ -9,11 +9,7 @@
 .PARAMETER None
 
 .NOTES
-    Auteur : Landry Gonzalez
-    Version : 1.0
-    Date de création : 20/06/2024
-    Dernière mise à jour : 20/06/2024
-    Contact : landry.gonzalez@gmail.com
+    cf. "Affichage des informations de versioning lors de l'exécution du script"
 
 .EXAMPLE
     .\package_update.ps1
@@ -26,50 +22,66 @@
 # Le script devrait se lancer en mode administrateur.
 # Il faudrait indiquer à l'utilisateur la liste des applications dont la source n'est pas winget
 
-# Nettoyage de l'invite de commande de l'interprêteur :
+# Nettoie de l'invite de commande de l'interprêteur afin de repartir "à neuf" :
 clear
 
-# Affichage des informations de versioning lors de l'exécution du script :
-Write-Host "---------------------------------------"
+
+###############################
+# INFORMATIONS DE VERSIONNING #
+###############################
+
+Write-Host "####################################"
 Write-Host "Nom du script : package_update.ps1"
-Write-Host "Version : 1.0"
+Write-Host "Version : 1.1"
 Write-Host "Auteur : Landry Gonzalez"
 Write-Host "Date de création: 20/06/2024"
-Write-Host "Dernière mise à jour : 20/06/2024"
+Write-Host "Dernière mise à jour : 17/09/2024"
 Write-Host "Contact : landry.gonzalez@gmail.com"
-Write-Host "---------------------------------------"
+Write-Host "####################################"
 
-# Déclaration des variables :
-$list_packages = winget list
-$list_packages_updates = @()
-$os_release = Get-WmiObject -Class Win32_OperatingSystem
-$powershell_release = $PSVersionTable.PSVersion.Major
 
-# Vérification de la compatibilité du système (version 10 = windows 11) :
+#############################
+# DECLARATION DES VARIABLES #
+#############################
+
+$list_packages = winget list    # Liste des applications installées sur le système, qu'elles soient sourcées par winget ou non
+$list_packages_updates = @()    # Défini la variable qui contiendra la liste des applications bénéficiant d'une mise à jour comme un tableau vide
+$os_release = Get-WmiObject -Class Win32_OperatingSystem    # Version du système d'exploitation
+$powershell_release = $PSVersionTable.PSVersion.Major     # Version de l'interface powershell qui fait office d'environnement pour le script
+
+
+####################################
+# VERIFICATION DE LA COMPATIBILITE #
+####################################
+# Winget ne peut fonctionner que sur certains systèmes d'exploitation et interfaces powershell.
+
+# Vérifie que le système d'exploitation est compatible.
 if ($os_release.Version -ge "10") {
-    Write-Output "`n[INFO] Ce script est compatible avec votre version d'OS (windows 11).`n"
+    Write-Output -ForegroundColor Green "`n[INFO] Ce système d'exploitation (version windows 11) est compatible avec ce script.`n"
+    # Vérifie que l'interface powershell est compatible.
+    if ($powershell_release -ge “7”) {
+        Write-Output -ForegroundColor Green "`n[INFO] Cette interface powershell (version égale ou supérieure à 7) est compatible avec ce script.`n"
+    } else {
+        Write-Output -ForegroundColor Red "`n[ERREUR] Cette interface powershell (version inférieure à 7) est incompatible avec ce script.`nCe dernier va donc se fermer dans 10 secondes."
+        Start-Sleep -Seconds 10
+        exit 1
+    }
 } else {
-    Write-Output -ForegroundColor Red "`n[ERREUR] Ce script est incompatible avec votre version d'OS (doit être windows 11) et va donc s'arrêter.`n"
+    Write-Output -ForegroundColor Red "`n[ERREUR] Ce système d'exploitation (version autre que windows 11) est incompatible avec ce script.`nCe dernier va donc se fermer dans 10 secondes."
     Start-Sleep -Seconds 10
     exit 1
 }
 
-# Vérification de la compatibilité de l'interface powershell (version majeure 7 minimum) :
-if ($powershell_release -ge “7”) {
-    Write-Output "`n[INFO] Cette interface powershell est compatible avec le script (version 7 ou supérieure).`n"
-} else {
-    Write-Output -ForegroundColor Red "`n[ERREUR] Ce script est incompatible avec votre interface powershell (doit être en version 7 minimum) et va donc s'arrêter.`n"
-    Start-Sleep -Seconds 10
-    exit 1
-}
 
-# Liste les paquets avec winget :
-#$list_packages_updates = $null
+#####################
+# LISTE LES PAQUETS #
+#####################
+
+# Liste les paquets avec la commande winget.
 foreach ($package in $list_packages) {
-    #echo $package
-    # Divise la ligne en colonnes toutes les 2 occurences d'espace au minimum :
+    # Segmente une ligne (qui représente les informations d'un paquet) en plusieurs colonnes. Le séparateur est 2 occurences ou plus de caractère espace.
     $columns = $package -split '\s{2,}'
-    # Crée un objet personnalisé pour nommer les colonnes :
+    # Crée un objet personnalisé pour nommer chaque colonne.
     $package_object = [PSCustomObject]@{
         Name = $columns[0]
         Id = $columns[1]
@@ -77,12 +89,18 @@ foreach ($package in $list_packages) {
         Available = $columns[3]
         Source = $columns[4]
     }
-    # Vérifie si la colonne "Available" contient une valeur :
+    # Vérifie si certaines colonnes contiennent des valeurs spécifiques.
     if ($columns.Length -ge 4 -and $columns[3] -ne '' -and $columns[3] -ne "winget" -and $columns[2] -ne "Version") {
-        # Ajoute le package à la liste des packages à mettre à jour :
-        $list_packages_updates += $package_object
+    #if ($columns.Length -ge 4 -and $columns.Available -ne '' -and $columns.Available -ne "winget" -and $columns.Version[2] -ne "Version") {
+        # Ajoute le paquet à la liste des paquets à mettre à jour.
+        $list_packages_updates += $package_object.Name
+        # Il faudrait mettre ce résultat sous forme de tableau avec un formattage propre, si pas le cas.
     }
 }
+
+##################################
+# INTERACTION AVEC L'UTILISATEUR #
+##################################
 
 # Affiche la liste des paquets à mettre à jour :
 if ($list_packages_updates.Name -eq $null) {
@@ -92,21 +110,29 @@ if ($list_packages_updates.Name -eq $null) {
     Start-Sleep -Seconds 10
     exit 0
 } else {
-    Write-Host -ForegroundColor Yellow "[WARNING] Les logiciels suivants ne sont pas à jour :`n" $list_packages_updates.Name "`n"
+    Write-Host -ForegroundColor Yellow "[WARNING] Les applications suivantes ne sont pas à jour :`n" $list_packages_updates.Name "`n"
+    Write-Host "Inscrivez le chiffre correspondant à l'action que vous souhaitez exécuter :`n1. Exécuter les mises à jour`n2. Fermer le script`n"
+    $choice = Read-Host "Saisissez un chiffre " 
 }
-# Il faudrait mettre ce résultat sous forme de tableau
 
-Write-Host "Inscrivez un chiffre selon l'action que vous souhaitez lancer :`n1. Exécuter les mises à jour`n2. Fermer le script`n"
-$choice = Read-Host "Saisissez un chiffre " 
+
+############################
+# INSTALLATION DES PAQUETS #
+############################
 
 # Vérifier le choix de l'utilisateur
 switch ($choice) {
     1 { Write-Host "`n[INFO] Les paquets sont en cours de mise à jour`n" ; winget update --all -h --disable-interactivity }
-    2 { Write-Host "`n[INFO] Le script se fermera dans 10 secondes.`n" ; Start-Sleep -Seconds 10 ; exit 1 }
+    2 { Write-Host "`n[INFO] Le script se fermera dans 10 secondes.`n" ; Start-Sleep -Seconds 10 ; exit 0 }
     default { Write-Output "Choix non valide" }
 }
 
 Write-Host -ForegroundColor Green "`n[INFO] Les paquets ont été mis à jour.`n"
+
+
+#################################
+# PAQUET NON SOURCES PAR WINGET #
+#################################
 
 $list_packages_notWinget = @()
 foreach ($package in $list_packages) {
@@ -120,12 +146,8 @@ foreach ($package in $list_packages) {
         Available = $columns[3]
         Source = $columns[4]
     }
-    # Vérifie si la colonne "Available" contient une valeur :
     if ($package_object.Source -notlike "winget" -and $package_object.Available -notlike "winget" -and $package_object -notlike $null) {
-        # Ajoute le package à la liste des packages à mettre à jour :
         $list_packages_notWinget += $package_object.Name
-        #echo $package_object && Start-Sleep 1
-        #echo $list_packages_notWinget && Start-Sleep 1
     }
     Write-Host -ForegroundColor Yellow "[WARNING] Les logiciels suivants n'ont pas été installés par winget :`n" $list_packages_updates.Name "`n"
 }
@@ -133,5 +155,3 @@ foreach ($package in $list_packages) {
 Write-Host "[INFO] Fermeture du script dans 10 secondes."
 Start-Sleep -Seconds 10
 exit 0
-
-# winget list --upgrade-available
