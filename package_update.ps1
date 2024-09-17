@@ -1,4 +1,4 @@
-<#
+<# 
 .SYNOPSIS
     Ce script vérifie les mises à jour des packages installés via winget.
 
