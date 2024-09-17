@@ -23,6 +23,9 @@
 
 #>
 
+# Le script devrait se lancer en mode administrateur.
+# Il faudrait indiquer à l'utilisateur la liste des applications dont la source n'est pas winget
+
 # Nettoyage de l'invite de commande de l'interprêteur :
 clear
 
@@ -36,21 +39,34 @@ Write-Host "Dernière mise à jour : 20/06/2024"
 Write-Host "Contact : landry.gonzalez@gmail.com"
 Write-Host "---------------------------------------"
 
-# Vérification de la compatibilité du système :
-$os = Get-WmiObject -Class Win32_OperatingSystem
-if ($os.Version -ge "10") {
+# Déclaration des variables :
+$list_packages = winget list
+$list_packages_updates = @()
+$os_release = Get-WmiObject -Class Win32_OperatingSystem
+$powershell_release = $PSVersionTable.PSVersion.Major
+
+# Vérification de la compatibilité du système (version 10 = windows 11) :
+if ($os_release.Version -ge "10") {
     Write-Output "`n[INFO] Ce script est compatible avec votre version d'OS (windows 11).`n"
 } else {
-    Write-Output -ForegroundColor Red "`n[ERREUR] Ce script est incompatible avec votre version d'OS (windows 11).`n"
-    Start-Sleep -Seconds 5
+    Write-Output -ForegroundColor Red "`n[ERREUR] Ce script est incompatible avec votre version d'OS (doit être windows 11) et va donc s'arrêter.`n"
+    Start-Sleep -Seconds 10
     exit 1
 }
 
-# Déclaration des variables :
-$packages = winget list
-$packages_updates = @()
+# Vérification de la compatibilité de l'interface powershell (version majeure 7 minimum) :
+if ($powershell_release -ge “7”) {
+    Write-Output "`n[INFO] Cette interface powershell est compatible avec le script (version 7 ou supérieure).`n"
+} else {
+    Write-Output -ForegroundColor Red "`n[ERREUR] Ce script est incompatible avec votre interface powershell (doit être en version 7 minimum) et va donc s'arrêter.`n"
+    Start-Sleep -Seconds 10
+    exit 1
+}
 
-foreach ($package in $packages) {
+# Liste les paquets avec winget :
+#$list_packages_updates = $null
+foreach ($package in $list_packages) {
+    #echo $package
     # Divise la ligne en colonnes toutes les 2 occurences d'espace au minimum :
     $columns = $package -split '\s{2,}'
     # Crée un objet personnalisé pour nommer les colonnes :
@@ -64,18 +80,21 @@ foreach ($package in $packages) {
     # Vérifie si la colonne "Available" contient une valeur :
     if ($columns.Length -ge 4 -and $columns[3] -ne '' -and $columns[3] -ne "winget" -and $columns[2] -ne "Version") {
         # Ajoute le package à la liste des packages à mettre à jour :
-        $packages_updates += $package_object
+        $list_packages_updates += $package_object
     }
 }
 
 # Affiche la liste des paquets à mettre à jour :
-if ($packages_updates.Name -eq $null) {
+if ($list_packages_updates.Name -eq $null) {
     Write-Host -ForegroundColor Green "[INFO] Félicitatez-vous ! Vos logiciels gérés par winget sont tous à jour.`n"
-    Write-Host -ForegroundColor Yellow "[WARNING] Powershell ne pourra jamais être mis à jour avec ce script. Pensez à le vérifier.`n"
-    #exit 0
+    # Inutile car on vérifie la version powershell en début : Write-Host -ForegroundColor Yellow "[WARNING] L'application powershell ne pourra jamais être mise à jour avec ce script. Pensez donc à vérifier sa version.`n"
+    Write-Host "[INFO] Fermeture du script dans 10 secondes."
+    Start-Sleep -Seconds 10
+    exit 0
 } else {
-    Write-Host -ForegroundColor Yellow "[WARNING] Les logiciels suivants ne sont pas à jour :`n$packages_updates.Name`n"
+    Write-Host -ForegroundColor Yellow "[WARNING] Les logiciels suivants ne sont pas à jour :`n" $list_packages_updates.Name "`n"
 }
+# Il faudrait mettre ce résultat sous forme de tableau
 
 Write-Host "Inscrivez un chiffre selon l'action que vous souhaitez lancer :`n1. Exécuter les mises à jour`n2. Fermer le script`n"
 $choice = Read-Host "Saisissez un chiffre " 
@@ -88,6 +107,28 @@ switch ($choice) {
 }
 
 Write-Host -ForegroundColor Green "`n[INFO] Les paquets ont été mis à jour.`n"
+
+$list_packages_notWinget = @()
+foreach ($package in $list_packages) {
+    # Divise la ligne en colonnes toutes les 2 occurences d'espace au minimum :
+    $columns = $package -split '\s{2,}'
+    # Crée un objet personnalisé pour nommer les colonnes :
+    $package_object = [PSCustomObject]@{
+        Name = $columns[0]
+        Id = $columns[1]
+        Version = $columns[2]
+        Available = $columns[3]
+        Source = $columns[4]
+    }
+    # Vérifie si la colonne "Available" contient une valeur :
+    if ($package_object.Source -notlike "winget" -and $package_object.Available -notlike "winget" -and $package_object -notlike $null) {
+        # Ajoute le package à la liste des packages à mettre à jour :
+        $list_packages_notWinget += $package_object.Name
+        #echo $package_object && Start-Sleep 1
+        #echo $list_packages_notWinget && Start-Sleep 1
+    }
+    Write-Host -ForegroundColor Yellow "[WARNING] Les logiciels suivants n'ont pas été installés par winget :`n" $list_packages_updates.Name "`n"
+}
 
 Write-Host "[INFO] Fermeture du script dans 10 secondes."
 Start-Sleep -Seconds 10
