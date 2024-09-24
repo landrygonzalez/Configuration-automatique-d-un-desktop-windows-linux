@@ -79,6 +79,7 @@ done
 
 
 # Vérification du lancement du terminal en tant qu'administrateur :
+
 if [ "$(id -u)" != "0" ]; then
   printf "Ce script doit être exécuté en tant qu'administrateur (sudo).\nCette fenêtre se fermera automatiquement dans 5 secondes." 1>&2
   sleep 5s
@@ -86,6 +87,7 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 # Déclaration des variables :
+
 # Les DNS ci-dessous sont ceux de Quad9 (https://quad9.net/fr/service/service-addresses-and-features).
 dns_primaire='9.9.9.9'
 dns_secondaire='149.112.112.112'
