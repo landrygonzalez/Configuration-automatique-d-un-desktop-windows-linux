@@ -22,8 +22,8 @@
 # Le script devrait se lancer en mode administrateur.
 # Il faudrait indiquer à l'utilisateur la liste des applications dont la source n'est pas winget
 
-# Nettoie de l'invite de commande de l'interprêteur afin de repartir "à neuf" :
-clear
+# Nettoie l'invite de commande de l'interprêteur afin de repartir à zéro:
+Clear-Host
 
 
 ###############################
@@ -39,6 +39,14 @@ Write-Host "Dernière mise à jour : 17/09/2024"
 Write-Host "Contact : landry.gonzalez@gmail.com"
 Write-Host "####################################"
 
+<## Vérifier si le script s'exécute en tant qu'administrateur
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))
+{
+    # Si ce n'est pas le cas, relancer le script avec les droits administratifs
+    $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"" + $MyInvocation.MyCommand.Definition + "`""
+    Start-Process PowerShell -ArgumentList $arguments -Verb RunAs
+    exit
+}#>
 
 #############################
 # DECLARATION DES VARIABLES #
@@ -81,6 +89,8 @@ if ($os_release.Version -ge "10") {
 foreach ($package in $list_packages) {
     # Segmente une ligne (qui représente les informations d'un paquet) en plusieurs colonnes. Le séparateur est 2 occurences ou plus de caractère espace.
     $columns = $package -split '\s{2,}'
+	#Write-Host $columns
+	#Start-Sleep -Seconds 2
     # Crée un objet personnalisé pour nommer chaque colonne.
     $package_object = [PSCustomObject]@{
         Name = $columns[0]
@@ -89,6 +99,7 @@ foreach ($package in $list_packages) {
         Available = $columns[3]
         Source = $columns[4]
     }
+	#Write-Host $package_object
     # Vérifie si certaines colonnes contiennent des valeurs spécifiques.
     if ($columns.Length -ge 4 -and $columns[3] -ne '' -and $columns[3] -ne "winget" -and $columns[2] -ne "Version") {
     #if ($columns.Length -ge 4 -and $columns.Available -ne '' -and $columns.Available -ne "winget" -and $columns.Version[2] -ne "Version") {
@@ -98,20 +109,22 @@ foreach ($package in $list_packages) {
     }
 }
 
+
 ##################################
 # INTERACTION AVEC L'UTILISATEUR #
 ##################################
 
 # Affiche la liste des paquets à mettre à jour :
-if ($list_packages_updates.Name -eq $null) {
+if ($list_packages_updates.count -eq 0) {
     Write-Host -ForegroundColor Green "[INFO] Félicitatez-vous ! Vos logiciels gérés par winget sont tous à jour.`n"
     # Inutile car on vérifie la version powershell en début : Write-Host -ForegroundColor Yellow "[WARNING] L'application powershell ne pourra jamais être mise à jour avec ce script. Pensez donc à vérifier sa version.`n"
     Write-Host "[INFO] Fermeture du script dans 10 secondes."
     Start-Sleep -Seconds 10
     exit 0
 } else {
-    Write-Host -ForegroundColor Yellow "[WARNING] Les applications suivantes ne sont pas à jour :`n" $list_packages_updates.Name "`n"
+    Write-Host -ForegroundColor Yellow "[WARNING] Les applications suivantes ne sont pas à jour :`n" $list_packages_updates "`n"
     Write-Host "Inscrivez le chiffre correspondant à l'action que vous souhaitez exécuter :`n1. Exécuter les mises à jour`n2. Fermer le script`n"
+    Write-host $list_packages_updates
     $choice = Read-Host "Saisissez un chiffre " 
 }
 
@@ -149,8 +162,8 @@ foreach ($package in $list_packages) {
     if ($package_object.Source -notlike "winget" -and $package_object.Available -notlike "winget" -and $package_object -notlike $null) {
         $list_packages_notWinget += $package_object.Name
     }
-    Write-Host -ForegroundColor Yellow "[WARNING] Les logiciels suivants n'ont pas été installés par winget :`n" $list_packages_updates.Name "`n"
 }
+Write-Host -ForegroundColor Yellow "[WARNING] Les logiciels suivants n'ont pas été installés par winget :`n" $list_packages_updates "`n"
 
 Write-Host "[INFO] Fermeture du script dans 10 secondes."
 Start-Sleep -Seconds 10
