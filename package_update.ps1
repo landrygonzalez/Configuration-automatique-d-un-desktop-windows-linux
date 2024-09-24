@@ -168,3 +168,4 @@ Write-Host -ForegroundColor Yellow "[WARNING] Les logiciels suivants n'ont pas Ã
 Write-Host "[INFO] Fermeture du script dans 10 secondes."
 Start-Sleep -Seconds 10
 exit 0
+
