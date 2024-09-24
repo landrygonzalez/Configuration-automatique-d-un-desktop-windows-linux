@@ -71,9 +71,9 @@ if ($os_release.Version -ge "10") {
     Write-Host -ForegroundColor Green "`n[INFO] Ce système d'exploitation (version windows 11) est compatible avec ce script.`n"
     # Vérifie que l'interface powershell est compatible.
     if ($powershell_release -ge “7”) {
-        Write-Host -ForegroundColor Green "`n[INFO] Cette interface powershell (version égale ou supérieure à 7) est compatible avec ce script.`n"
+        Write-Host -ForegroundColor Green "[INFO] Cette interface powershell (version égale ou supérieure à 7) est compatible avec ce script.`n"
     } else {
-        Write-Host -ForegroundColor Red "`n[ERREUR] Cette interface powershell (version inférieure à 7) est incompatible avec ce script.`nCe dernier va donc se fermer dans 10 secondes."
+        Write-Host -ForegroundColor Red "[ERREUR] Cette interface powershell (version inférieure à 7) est incompatible avec ce script.`nCe dernier va donc se fermer dans 10 secondes."
         Start-Sleep -Seconds 10
         exit 1
     }
