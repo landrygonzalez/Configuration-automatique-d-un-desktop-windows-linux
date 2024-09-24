@@ -119,7 +119,7 @@ foreach ($package in $list_packages) {
 
 # Affiche la liste des paquets à mettre à jour :
 if ($list_packages_updates.count -eq 0) {
-    Write-Host -ForegroundColor Green "[INFO] Félicitatez-vous ! Vos logiciels gérés par winget sont tous à jour.`n"
+    Write-Host -ForegroundColor Green "`n[INFO] Vos logiciels gérés par winget sont tous à jour, vous n'avez rien à faire.`n"
     # Inutile car on vérifie la version powershell en début : Write-Host -ForegroundColor Yellow "[WARNING] L'application powershell ne pourra jamais être mise à jour avec ce script. Pensez donc à vérifier sa version.`n"
     Write-Host "[INFO] Fermeture du script dans 10 secondes."
     Start-Sleep -Seconds 10
