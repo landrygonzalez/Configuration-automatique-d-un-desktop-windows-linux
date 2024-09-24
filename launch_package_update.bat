@@ -12,11 +12,12 @@ rem }
 rem #>
 
 @echo off
-set "filePath=C:\Program Files\PowerShell\7\pwsh.exe"
 
-if exist "%filePath%" (
-    start "" "%filePath%" -ExecutionPolicy Bypass -File "%USERPROFILE%\Downloads\package_update.ps1"
+set "programFilesPath=C:\Program Files"
+set "pwshPath=%programFilesPath%\PowerShell\7\pwsh.exe"
+
+if exist "%pwshPath%" (
+    start "" "%pwshPath%" -ExecutionPolicy Bypass -File "%USERPROFILE%\Downloads\package_update.ps1"
 ) else (
-    echo PowerShell version 7 n'existe pas. Le script va se fermer.
+    echo PowerShell version 7 n'existe pas.
 )
-timeout 10
