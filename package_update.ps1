@@ -25,8 +25,8 @@
 # Nettoie l'invite de commande de l'interprêteur afin de repartir à zéro:
 Clear-Host
 
-try {
-    Start-Transcript -Path "C:\temp\error_log.txt"
+#try {
+#    Start-Transcript -Path "C:\temp\error_log.txt"
     # Le code que tu soupçonnes de causer l'erreur
 
 ###############################
@@ -171,9 +171,9 @@ Write-Host -ForegroundColor Yellow "[WARNING] Les logiciels suivants n'ont pas �
 Write-Host "[INFO] Fermeture du script dans 10 secondes."
 Start-Sleep -Seconds 10
 
-Stop-Transcript
-} catch {
-    Write-Output "An error occurred: $_"
-}
+#Stop-Transcript
+#} catch {
+#    Write-Output "An error occurred: $_"
+#}
 
 exit 0
