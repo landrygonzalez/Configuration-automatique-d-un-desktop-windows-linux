@@ -1,21 +1,93 @@
 #!/bin/bash
 
 clear
-#set -x
 
-###################################################################
-# Vérification du lancement du terminal en tant qu'administrateur #
-###################################################################
-#printf "Etape 1/4..."
+# Passage en mode debug :
+if [ verbose = "1" ]; then 
+  set -x
+fi
+
+# -----------------------------------------------------------------------------
+# Nom du Script : dns_config.sh
+# Version       : 1.0.0
+# Auteur        : Landry Gonzalez
+# Date          : 2024-06-20
+# Description   : Ce script configure les DNS sur poste linux.
+# Usage         : ./dns_config.sh
+# Contacts      : landry.gonzalez@gmail.com
+# -----------------------------------------------------------------------------
+# Historique des Versions :
+# 1.0.0  2024-06-20  Première version
+# -----------------------------------------------------------------------------
+
+# Déclaration des variables :
+verbose="0"
+fichier_conf="dns_config"
+
+# Fonction pour afficher l'aide
+function afficher_aide() {
+    echo "Usage: $0 chemin_du_fichier"
+    echo
+    echo "chemin_du_fichier : Chemin vers le fichier à vérifier."
+    exit 1
+}
+
+# Vérification des arguments
+if [ $# -ne 1 ]; then
+    afficher_aide
+fi
+
+chemin_du_fichier=$1
+
+# Vérifier si le fichier existe
+if [ ! -f "$chemin_du_fichier" ]; then
+    echo "Le fichier '$chemin_du_fichier' n'existe pas."
+    exit 1
+fi
+
+# Vérifier si le fichier est vide
+if [ ! -s "$chemin_du_fichier" ]; then
+    echo "Le fichier '$chemin_du_fichier' est vide."
+    exit 0
+fi
+
+# Afficher le contenu du fichier
+echo "Le fichier '$chemin_du_fichier' n'est pas vide. Son contenu est :"
+cat "$chemin_du_fichier"
+echo
+
+# Demander à l'utilisateur s'il souhaite poursuivre ou arrêter
+while true; do
+    read -p "Souhaitez-vous poursuivre le script ? (o/n) : " choix
+    case $choix in
+        [oO]* ) 
+            echo "Vous avez choisi de poursuivre le script."
+            # Ajoutez ici la logique à exécuter si l'utilisateur choisit de poursuivre
+            break
+            ;;
+        [nN]* )
+            echo "Vous avez choisi d'arrêter le script."
+            exit 0
+            ;;
+        * ) 
+            echo "Veuillez répondre par o (oui) ou n (non)."
+            ;;
+    esac
+done
+
+
+
+
+# Vérification du lancement du terminal en tant qu'administrateur :
+
 if [ "$(id -u)" != "0" ]; then
   printf "Ce script doit être exécuté en tant qu'administrateur (sudo).\nCette fenêtre se fermera automatiquement dans 5 secondes." 1>&2
   sleep 5s
   exit 1
 fi
 
-#############################
-# Déclaration des variables #
-#############################
+# Déclaration des variables :
+
 # Les DNS ci-dessous sont ceux de Quad9 (https://quad9.net/fr/service/service-addresses-and-features).
 dns_primaire='9.9.9.9'
 dns_secondaire='149.112.112.112'
