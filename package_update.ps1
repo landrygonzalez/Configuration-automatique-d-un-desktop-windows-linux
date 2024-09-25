@@ -57,31 +57,69 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 
 $list_packages = winget list    # Liste des applications installées sur le système, qu'elles soient sourcées par winget ou non
 $list_packages_updates = @()    # Défini la variable qui contiendra la liste des applications bénéficiant d'une mise à jour comme un tableau vide
-$os_release = Get-WmiObject -Class Win32_OperatingSystem    # Version du système d'exploitation
+$os_release = (Get-WmiObject -Class Win32_OperatingSystem).Version    # Version du système d'exploitation
+$os_release_min = "10"
 $powershell_release = $PSVersionTable.PSVersion.Major     # Version de l'interface powershell qui fait office d'environnement pour le script
+$powershell_release_min = "7"
+$choco_installed = (Get-Command choco.exe).Name
+$choco_version = (choco -v)
 
-
-####################################
-# VERIFICATION DE LA COMPATIBILITE #
-####################################
-# Winget ne peut fonctionner que sur certains systèmes d'exploitation et interfaces powershell.
-
-# Vérifie que le système d'exploitation est compatible.
-if ($os_release.Version -ge "10") {
-    Write-Host -ForegroundColor Green "`n[INFO] Ce système d'exploitation (version windows 11) est compatible avec ce script.`n"
-    # Vérifie que l'interface powershell est compatible.
-    if ($powershell_release -ge “7”) {
-        Write-Host -ForegroundColor Green "[INFO] Cette interface powershell (version égale ou supérieure à 7) est compatible avec ce script.`n"
+function choco_install_check {
+    # Vérifie si chocolatey est installé. 
+    if ($choco_installed -ne $null){
+        Write-Host "Chocolatey est installé en version "$choco_version".`n`n"
     } else {
-        Write-Host -ForegroundColor Red "[ERREUR] Cette interface powershell (version inférieure à 7) est incompatible avec ce script.`nCe dernier va donc se fermer dans 10 secondes."
-        Start-Sleep -Seconds 10
-        exit 1
+        Write-Host "Chocolatey n'est pas installé.`n`n"
+        Write-Host "Que voulez vous faire ? Inscrivez le chiffre correspondant à votre choix :`n1. Installer Chocolatey`n2. Ne pas installer Chocolatey et utiliser winget`n`n"
+        $choco_install_choice = Read-Host ""
+        switch ($choco_install_choice) {
+            1 { choco_install }
+            2 { winget_compatibility }
+            default { Write-Output "Choix non valide" }
+        }
     }
-} else {
-    Write-Host -ForegroundColor Red "`n[ERREUR] Ce système d'exploitation (version autre que windows 11) est incompatible avec ce script.`nCe dernier va donc se fermer dans 10 secondes."
-    Start-Sleep -Seconds 10
-    exit 1
 }
+
+function choco_install {
+    ##############################
+    # INSTALLATION DE CHOCOLATEY #
+    ##############################
+    Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+}
+
+function winget_compatibility {
+    ################################################
+    # VERIFICATION DE LA COMPATIBILITE POUR WINGET #
+    ################################################
+
+    # Vérifie que les versions minimales du système d'exploitation et de l'interprêteur de commandes sont compatibles avec le script.
+    if ($os_release -ge $os_release_min) {
+        $os_ko = "1"
+    }
+    if ($powershell_release -ge $powershell_release_min) {
+        $powershell_ko = "1"
+    }
+
+    if ($os_ko -eq "1" -or $powershell_ko -eq "1"){
+        Write-Host -ForegroundColor Red "[CRITICAL] Un des prérequis à l'exécution de ce script n'est pas conforme :`n`tLe système d'exploitation windows est en version $os_release, et il devrait être en version $os_release_min au minimum.`n`tL'interprêteur powershell est en version $powershell_release, et il devrait être en version $powershell_release_min au minimum.`n`n"
+        Write-Host -ForegroundColor Red "Fermeture du script ..."
+        Start-Sleep -Seconds 20
+        exit 1
+    } else {
+        Write-Host -ForegroundColor Green "`n[INFO] Tous les prérequis à l'exécution de ce script sont conformes :`n`tLe système d'exploitation windows est en version $os_release, et il devrait être en version $os_release_min au minimum.`n`tL'interprêteur powershell est en version $powershell_release, et il devrait être en version $powershell_release_min au minimum.`n`n"
+        Start-Sleep -Seconds 20
+    }
+}
+            
+#Write-Host "Chocolatey n'est pas installé. Le script va donc prioriser winget.`n`nPour l'installer, accédez à l'url suivante :`nhttps://chocolatey.org/install"
+
+
+##############################
+# VERIFICATION DES PREREQUIS #
+##############################
+choco_install_check
+# Ou lancer chocolatey
+winget_compatibility
 
 
 #####################
