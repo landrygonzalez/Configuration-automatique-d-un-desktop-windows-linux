@@ -20,4 +20,5 @@ if exist "%pwshPath%" (
     start "" "%pwshPath%" -ExecutionPolicy Bypass -File "%USERPROFILE%\Downloads\package_update.ps1"
 ) else (
     echo PowerShell version 7 n'existe pas.
+    winget install Microsoft.PowerShell
 )
