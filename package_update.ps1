@@ -110,7 +110,7 @@ function winget_compatibility {
 
 '@
         # Compte à rebours
-        for ($i = 10; $i -gt 0; $i--) {
+        for ($i = 9; $i -gt 0; $i--) {
             Write-Host -ForegroundColor Blue "[INFO] Fermeture du script dans $i secondes" -NoNewline
             Start-Sleep -Seconds 1  # Pause d'une seconde
             Write-Host "`r" -NoNewLine  # Retour au début de la ligne
@@ -127,7 +127,7 @@ function winget_compatibility {
 
 "@
         # Compte à rebours
-        for ($i = 10; $i -gt 0; $i--) {
+        for ($i = 9; $i -gt 0; $i--) {
             Write-Host -ForegroundColor Blue "[INFO] Poursuite du script dans $i secondes" -NoNewline
             Start-Sleep -Seconds 1  # Pause d'une seconde
             Write-Host "`r" -NoNewLine  # Retour au début de la ligne
@@ -140,8 +140,8 @@ function winget_compatibility {
 }
 
 function write_host_exit {
-    for ($i = 10; $i -gt 0; $i--) {
-        Write-Host -ForegroundColor Blue "`n[INFO] Le script se fermera dans 10 secondes.`n" -NoNewline
+    for ($i = 9; $i -gt 0; $i--) {
+        Write-Host -ForegroundColor Blue "`n[INFO] Le script se fermera dans $i secondes.`n" -NoNewline
         Start-Sleep -Seconds 1  # Pause d'une seconde
         Write-Host "`r" -NoNewLine  # Retour au début de la ligne
     }
@@ -259,7 +259,7 @@ function packages_non_winget {
 function timing {
 
     # Compte à rebours
-    for ($i = 2; $i -gt 0; $i--) {
+    for ($i = 3; $i -gt 0; $i--) {
         Write-Host -ForegroundColor Blue "[INFO] Poursuite du script dans $i secondes" -NoNewline
         Start-Sleep -Seconds 1
         Write-Host "`r" -NoNewLine  # Retour au début de la ligne
