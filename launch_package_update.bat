@@ -17,7 +17,7 @@ set "programFilesPath=C:\Program Files"
 set "pwshPath=%programFilesPath%\PowerShell\7\pwsh.exe"
 
 if exist "%pwshPath%" (
-    start "" "%pwshPath%" -ExecutionPolicy Bypass -File "package_update.ps1" rem %USERPROFILE%\Downloads\
+    start "" "%pwshPath%" -ExecutionPolicy Bypass -File ".\package_update.ps1" rem %USERPROFILE%\Downloads\
 ) else (
     echo PowerShell version 7 n'existe pas.
     winget install Microsoft.PowerShell
