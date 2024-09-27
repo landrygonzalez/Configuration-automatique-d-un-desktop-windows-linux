@@ -137,7 +137,6 @@ function winget_compatibility {
     Write-Host -ForegroundColor Blue "[INFO] Fin du compte à rebours, l'exécution du script se poursuit." -NoNewline
     Start-Sleep -Seconds 1
     Write-Host "`r" -NoNewLine  # Retour au début de la ligne
-    Write-Host "`n"
     }
 }
 
@@ -213,12 +212,12 @@ function install_package {
         }
         exit 0
     } else {
-        Write-Host -ForegroundColor Yellow "[WARNING] Les applications suivantes ne sont pas à jour :`n" $list_packages_updates "`n"
+        Write-Host -ForegroundColor Yellow "[WARNING] Les applications suivantes ne sont pas à jour :`n"
+        $list_packages_updates
         Start-Sleep -Seconds 1
-        Write-Host "Inscrivez le chiffre correspondant à l'action que vous souhaitez exécuter :`n1. Exécuter les mises à jour`n2. Fermer le script`n"
+        Write-Host "`nInscrivez le chiffre correspondant à l'action que vous souhaitez exécuter :`n1. Exécuter les mises à jour`n2. Fermer le script`n"
         Start-Sleep -Seconds 1
         $choice = Read-Host "Saisissez un chiffre " 
-        Write-Host "`n"
     }
 
     # Vérifier le choix de l'utilisateur
