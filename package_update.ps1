@@ -27,7 +27,7 @@
 $list_packages = winget list    # Liste des applications installées sur le système, qu'elles soient sourcées par winget ou non
 $list_packages_updates = @()    # Défini la variable qui contiendra la liste des applications bénéficiant d'une mise à jour comme un tableau vide
 $os_release = (Get-WmiObject -Class Win32_OperatingSystem).Version    # Version du système d'exploitation
-$os_release_min = "10"
+$os_release_min = "10.0.22"
 $powershell_release = $PSVersionTable.PSVersion.Major     # Version de l'interface powershell qui fait office d'environnement pour le script
 $powershell_release_min = "7"
 $choco_installed = (Get-Command choco.exe).Name
