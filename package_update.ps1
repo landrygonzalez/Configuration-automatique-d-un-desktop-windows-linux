@@ -46,11 +46,13 @@ function choco_install_check {
 ###################################################################
 
 "@
-    Start-Sleep -Seconds 3
+    Start-Sleep -Seconds 2
     if ($null -ne $choco_installed){
         Write-Host -ForegroundColor Blue "[INFO] Chocolatey est installé en version"$choco_version".`n"
+        Start-Sleep -Seconds 2
     } else {
         Write-Host -ForegroundColor Yellow "[WARNING] Chocolatey n'est pas installé.`n"
+        Start-Sleep -Seconds 2
         Write-Host -ForegroundColor Magenta @"
 [INTERACTION] Que voulez vous faire ? Entrez le chiffre correspondant à votre choix :
     1. Installer Chocolatey (fonctionnalité désactivée le 26/09/2024, développement en cours)
@@ -58,9 +60,9 @@ function choco_install_check {
 "@
         $choco_install_choice = Read-Host ""
         switch ($choco_install_choice) {
-            1 { Write-Host -ForegroundColor Red "[CRITICAL] Choix invalide"; Start-Sleep -Seconds 3; choco_install_check } # { choco_install }
+            1 { Write-Host -ForegroundColor Red "[CRITICAL] Choix invalide"; Start-Sleep -Seconds 2; choco_install_check } # { choco_install }
             2 { winget_compatibility }
-            default { Write-Host -ForegroundColor Red "[CRITICAL] Choix invalide"; Start-Sleep -Seconds 3; choco_install_check }
+            default { Write-Host -ForegroundColor Red "[CRITICAL] Choix invalide"; Start-Sleep -Seconds 2; choco_install_check }
         }
     }
 }
@@ -127,7 +129,7 @@ function winget_compatibility {
 
 "@
         # Compte à rebours
-        for ($i = 9; $i -gt 0; $i--) {
+        for ($i = 5; $i -gt 0; $i--) {
             Write-Host -ForegroundColor Blue "[INFO] Poursuite du script dans $i secondes" -NoNewline
             Start-Sleep -Seconds 1  # Pause d'une seconde
             Write-Host "`r" -NoNewLine  # Retour au début de la ligne
@@ -140,8 +142,8 @@ function winget_compatibility {
 }
 
 function write_host_exit {
-    for ($i = 9; $i -gt 0; $i--) {
-        Write-Host -ForegroundColor Blue "`n[INFO] Le script se fermera dans $i secondes.`n" -NoNewline
+    for ($i = 3; $i -gt 0; $i--) {
+        Write-Host -ForegroundColor Blue "[INFO] Le script se fermera dans $i secondes." -NoNewline
         Start-Sleep -Seconds 1  # Pause d'une seconde
         Write-Host "`r" -NoNewLine  # Retour au début de la ligne
     }
@@ -175,10 +177,12 @@ function list_package {
         if ($columns.Length -ge 4 -and $columns[3] -ne '' -and $columns[3] -ne "winget" -and $columns[2] -ne "Version") {
         #if ($columns.Length -ge 4 -and $columns.Available -ne '' -and $columns.Available -ne "winget" -and $columns.Version[2] -ne "Version") {
             # Ajoute le paquet à la liste des paquets à mettre à jour.
-            $list_packages_updates += $package_object.Name
+            $global:list_packages_updates += $package_object.Name
             # Il faudrait mettre ce résultat sous forme de tableau avec un formattage propre, si pas le cas.
         }
-    }    
+    }
+    Write-Host "`n"
+    Start-Sleep -Seconds 1
 }
 
 function install_package {
@@ -190,11 +194,14 @@ function install_package {
 
 "@
 
+    Start-Sleep -Seconds 1
+
     # Affiche la liste des paquets à mettre à jour :
     if ($list_packages_updates.count -eq 0) {
+        Write-Host $list_packages_updates.count
         Write-Host -ForegroundColor Green "[SUCCESS] Vos logiciels gérés par winget sont déjà tous à jour, vous n'avez rien à faire.`n"
         # Inutile car on vérifie la version powershell en début : Write-Host -ForegroundColor Yellow "[WARNING] L'application powershell ne pourra jamais être mise à jour avec ce script. Pensez donc à vérifier sa version.`n"
-        Start-Sleep -Seconds 2
+        Start-Sleep -Seconds 1
         Write-Host -ForegroundColor Magenta "[INTERACTION] Appuyez sur une touche pour continuer...`n"
         [void][System.Console]::ReadKey($true)  # Attend que l'utilisateur appuie sur une touche
 
@@ -206,19 +213,22 @@ function install_package {
         }
         exit 0
     } else {
-        Write-Host -ForegroundColor Yellow "`n[WARNING] Les applications suivantes ne sont pas à jour :`n" $list_packages_updates "`n"
+        Write-Host -ForegroundColor Yellow "[WARNING] Les applications suivantes ne sont pas à jour :`n" $list_packages_updates "`n"
+        Start-Sleep -Seconds 1
         Write-Host "Inscrivez le chiffre correspondant à l'action que vous souhaitez exécuter :`n1. Exécuter les mises à jour`n2. Fermer le script`n"
+        Start-Sleep -Seconds 1
         $choice = Read-Host "Saisissez un chiffre " 
+        Write-Host "`n"
     }
 
     # Vérifier le choix de l'utilisateur
     switch ($choice) {
-        1 { Write-Host -ForegroundColor Blue "`n[INFO] Les paquets sont en cours de mise à jour`n" ; winget update --all -h --disable-interactivity }
+        1 { Write-Host -ForegroundColor Blue "[INFO] Les paquets sont en cours de mise à jour`n" ; winget update --all -h --disable-interactivity }
         2 { write_host_exit }
-        default { Write-Host -ForegroundColor Red "`n[CRITICAL] Choix invalide`n" ; Start-Sleep -Seconds 3 ; install_package }
+        default { Write-Host -ForegroundColor Red "[CRITICAL] Choix invalide`n" ; Start-Sleep -Seconds 3 ; install_package }
     }
 
-    Write-Host -ForegroundColor Green "`n[INFO] Les paquets ont été mis à jour.`n"
+    Write-Host -ForegroundColor Green "[INFO] Les paquets ont été mis à jour.`n"
 }
 
 function packages_non_winget {
