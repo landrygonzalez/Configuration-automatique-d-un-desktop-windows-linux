@@ -24,7 +24,7 @@ if (Test-Path $file_chocolatey) {
         $package_to_update = choco outdated
 
         # Sépare la ligne en lignes individuelles :
-        $lines = $package_to_update -split "`n"
+        #$lines = $package_to_update -split "`n"
         
         <#
         # Filtre les lignes pertinentes (celles contenant les informations sur les paquets)
