@@ -21,7 +21,7 @@ if (Test-Path $file_chocolatey) {
         Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
         # Afficher les paquets pas à jour : 
-        $package_to_update = choco outdated
+        #$package_to_update = choco outdated
 
         # Sépare la ligne en lignes individuelles :
         #$lines = $package_to_update -split "`n"
