@@ -27,6 +27,8 @@ $os_release_min = "10.0.22"
 $powershell_release = $PSVersionTable.PSVersion.Major
 $powershell_release_min = "7"
 
+winget source update
+
 
 ### AFFICHAGE DU VERSIONNING ###
 
@@ -162,111 +164,118 @@ function list_package_system {
     $date = Get-Date -Format "yyyyMMddHHmmss"
     $file_list_package = "$HOME\winget_list_package_system_${date}.txt"
     winget list > $file_list_package # "winget list" liste les applications installées sur le système (qu'elles aient été installées par winget ou un autre gestionnaire de paquets)
+    #Start-Sleep -Seconds 5
 
     $list_packages = Get-Content -Path $file_list_package
-    $list_packages_object = @()
+    $global:list_packages_object = @()
 
     # Vérifie si le fichier ne contient pas de paquets à mettre à jour car la colonne Disponible rallonge chaque ligne et implique donc un traitement différent du fichier.
-    if ($list_packages -notlike "Disponible") {
+    if ($list_packages -notmatch 'Disponible\sSource') {
 
         # Itère sur chacune des lignes du fichier.
         foreach ($line in $list_packages) {
 
+            $length = $line.length
+
             # Conditionne le flux seulement si la ligne ne contient pas les regex suivantes.
-            if ($line -notmatch '^[-]+$' -and $line -notmatch '^\s*-\s*$|^\s*$' -and $line -notmatch '^\s*\\\s*$' -and $line -notmatch '^Nom\s+ID\s+Version\s+Source$') {
-                    
-                $columns1 = $line.Substring(0,47)
-                $columns2 = $line.Substring(48,46)
-                $columns3 = $line.Substring(94,18)
+            if ($line -notmatch '^[-]+$' -and $line -notmatch '^\s*-\s*$|^\s*$' -and $line -notmatch '^\s*\\\s*$' -and $line -notmatch '^Nom\s+ID\s+Version') {
+                
+                if ($length -gt 50) {
 
-                # Récupère la longueur de la ligne (cette longueur commence au premier caractère et termine au dernier (en comptant les espaces au milieu))
-                $length = $line.length
+                    $columns1 = $line.Substring(0,42)
+                    $columns2 = $line.Substring(42,42)
+                    $columns3 = $line.Substring(84,18)
 
-                if ($length -le 113 -and $length -gt 20) {
+                    # Récupère la longueur de la ligne (cette longueur commence au premier caractère et termine au dernier (en comptant les espaces au milieu))
+                    if ($line -like "winget"<#$length -le 117#>) {
 
-                    $package_object = [PSCustomObject]@{
-                        Name = $columns1
-                        Id = $columns2
-                        Version = $columns3
-                        Disponible = $null
-                        Source = $null # Si la longueur est de maximum 112, cela signifie que la source n'existe pas. Il faut donc mettre la colonne Source à $null, afin qu'elle existe, mais qu'elle reste vide.
+                        $package_object = [PSCustomObject]@{
+                            Name = $columns1
+                            Id = $columns2
+                            Version = $columns3
+                            Disponible = $null
+                            Source = $null # Si la longueur est de maximum 112, cela signifie que la source n'existe pas. Il faut donc mettre la colonne Source à $null, afin qu'elle existe, mais qu'elle reste vide.
+                        }
+
+                        $list_packages_object += $package_object
+
+                    } 
+                    else {
+
+                        $columns4 = $line.Substring(102,6)
+
+                        $package_object = [PSCustomObject]@{
+                            Name = $columns1
+                            Id = $columns2
+                            Version = $columns3
+                            Disponible = $null
+                            Source = $columns4
+                        }
+
+                        $list_packages_object += $package_object
                     }
-
-                    $list_packages_object += $package_object
-
-                } 
-                elseif ($length -gt 113) {
-
-		            #$length
-                    #$line
-
-                    $columns4 = $line.Substring(112,6)
-
-                    $package_object = [PSCustomObject]@{
-                        Name = $columns1
-                        Id = $columns2
-                        Version = $columns3
-                        Disponible = $null
-                        Source = $columns4
-                    }
-
-                    $list_packages_object += $package_object
                 }
             }
         }
-
     } 
+
+    # Si le fichier contient la colonne "Disponible".
     else {
 
         # Itère sur chacune des lignes du fichier.
         foreach ($line in $list_packages) {
 
+            # Récupère la longueur de la ligne (cette longueur commence au premier caractère et termine au dernier (en comptant les espaces au milieu))
+            $length = $line.length
+
             # Conditionne le flux seulement si la ligne ne contient pas les regex suivantes.
-            if ($line -notmatch '^[-]+$' -and $line -notmatch '^\s*-\s*$|^\s*$' -and $line -notmatch '^\s*\\\s*$' -and $line -notmatch '^Nom\s+ID\s+Version\s+Source$') {
+            if ($line -notmatch '^[-]+$' -and $line -notmatch '^\s*-\s*$|^\s*$' -and $line -notmatch '^\s*\\\s*$' -and $line -notmatch '^Nom\s+') {
 
-                $columns1 = $line.Substring(0,47)
-                $columns2 = $line.Substring(48,46)
-                $columns3 = $line.Substring(94,18)
-                $columns4 = $line.Substring(112,11)
+                if ($length -gt 80) {
 
-                # Récupère la longueur de la ligne (cette longueur commence au premier caractère et termine au dernier (en comptant les espaces au milieu))
-                $length = $line.length
+                    $columns1 = $line.Substring(0,42)
+                    $columns2 = $line.Substring(42,42)
+                    $columns3 = $line.Substring(84,18) # La colonne version peut s'arrêter avant la plage désignée
+                    $columns4 = $line.Substring(102,11)
 
-                if ($length -le 113 -and $length -gt 20) {
+                    if ($line -like "winget") {
 
-                    $package_object = [PSCustomObject]@{
-                        Name = $columns1
-                        Id = $columns2
-                        Version = $columns3
-                        Disponible = $columns4
-                        Source = $null
+                        $columns5 = $line.Substring(119,6)
+                        
+                        $package_object = [PSCustomObject]@{
+                            Name = $columns1
+                            Id = $columns2
+                            Version = $columns3
+                            Disponible = $columns4
+                            Source = $columns5
+                        }
+
+                        $list_packages_object += $package_object
+
                     }
+                    <#elseif ($length -gt 117) {
 
-                    $list_packages_object += $package_object
+                        
 
-                }
-                elseif ($length -gt 113) {
+                        $package_object = [PSCustomObject]@{
+                            Name = $columns1
+                            Id = $columns2
+                            Version = $columns3
+                            Disponible = $columns4
+                            Source = $columns5
+                        }
 
-                    $columns5 = $line.Substring(123,6)
-
-                    $package_object = [PSCustomObject]@{
-                        Name = $columns1
-                        Id = $columns2
-                        Version = $columns3
-                        Disponible = $columns4
-                        Source = $columns5
-                    }
-
-                    $list_packages_object += $package_object
+                        $list_packages_object += $package_object
+                    }#>
                 }
             }
         }
     }
 
     $global:list_packages_to_update = @()
-    $list_packages_to_update = $list_packages_object | Where-Object { $null -ne $_.Available } | Select-Object Name,Disponible | Format-Table
+    $list_packages_to_update = $list_packages_object | Where-Object { $null -ne $_.Disponible } | Select-Object Name,Disponible | Format-Table
 
-<#  foreach ($object in $list_packages_to_update) {
+    <#  foreach ($object in $list_packages_to_update) {
         $global:list_packages_updates += $object
         Segmente une ligne (qui représente les informations d'un paquet) en plusieurs colonnes. Le séparateur est 2 occurences ou plus de caractère espace.
         $columns = $package -split '\s{2,}'
@@ -275,21 +284,21 @@ function list_package_system {
         Start-Sleep -Seconds 2
         Crée un objet personnalisé pour nommer chaque colonne.
     }
-        Write-Host $package_object
-        Vérifie si certaines colonnes contiennent des valeurs spécifiques.
-        if ($columns.Length -ge 4 -and $columns[3] -ne '' ) {
+    Write-Host $package_object
+    Vérifie si certaines colonnes contiennent des valeurs spécifiques.
+    if ($columns.Length -ge 4 -and $columns[3] -ne '' ) {
 
-        if ($object.Disponible -like "winget" -and $columns.Version[2] -ne "Version") {}
-        if ($columns.Length -ge 4 -and $columns[3] -ne '' ) {}
+    if ($object.Disponible -like "winget" -and $columns.Version[2] -ne "Version") {}
+    if ($columns.Length -ge 4 -and $columns[3] -ne '' ) {}
 
-        if ($object.Disponible -like "winget" -and $columns.Version[2] -ne "Version") {
-            Ajoute le paquet à la liste des paquets à mettre à jour.
-            
-            $global:list_packages_updates += $package_object.Name
-            
-            $global:list_packages_updates += $package_object.Name
-            Il faudrait mettre ce résultat sous forme de tableau avec un formattage propre, si pas le cas.
-        }
+    if ($object.Disponible -like "winget" -and $columns.Version[2] -ne "Version") {
+        Ajoute le paquet à la liste des paquets à mettre à jour.
+        
+        $global:list_packages_updates += $package_object.Name
+        
+        $global:list_packages_updates += $package_object.Name
+        Il faudrait mettre ce résultat sous forme de tableau avec un formattage propre, si pas le cas.
+    }
     #>
     Start-Sleep -Seconds 1
 }
@@ -306,6 +315,9 @@ function update_package_auto {
 
 "@
 
+    winget upgrade --all --include-unknown --disable-interactivity
+
+    <#
     Start-Sleep -Seconds 1
 
     # Affiche la liste des paquets à mettre à jour :
@@ -336,7 +348,7 @@ function update_package_auto {
         }
     }
 
-    Write-Host -ForegroundColor Green "[INFO] Les paquets ont été mis à jour.`n"
+    Write-Host -ForegroundColor Green "[INFO] Les paquets ont été mis à jour.`n"#>
 }
 
 
@@ -500,10 +512,12 @@ function main {
     versionning
     #choco_install_check    # Installe Chocolatey
     winget_prerequisite    # Vérifie les prérequis de compatibilité pour winget
-    list_package_system    
+    #list_package_system    
     update_package_auto
     #packages_non_winget
-    exit_no_error
+    #exit_no_error
+    Start-Sleep -Seconds 10
+    exit 0
 }
 
 main
