@@ -1,10 +1,8 @@
 <#
 .SYNOPSIS
     Le script package_update.ps1 vérifie puis installe les mises à jour disponibles des paquets qui ont été installés par winget.
-    Le script package_update.ps1 vérifie puis installe les mises à jour disponibles des paquets qui ont été installés par winget.
 
 .DESCRIPTION
-    None
     None
 
 .PARAMETER 
@@ -12,52 +10,22 @@
 
 .NOTES
     None
-    None
 
 .EXAMPLE
     & .\package_update.ps1
-    & .\package_update.ps1
 
 .LINK
-    https://github.com/landrygonzalez/Configuration-automatique-d-un-desktop-windows-linux
     https://github.com/landrygonzalez/Configuration-automatique-d-un-desktop-windows-linux
 #>
 
 
 ### DECLARATION DES VARIABLES GLOBALES ###
-### DECLARATION DES VARIABLES GLOBALES ###
 
-$list_packages_to_update = @() # Contient la liste des paquets avec une mise à jour disponible.
-$os_release = (Get-WmiObject -Class Win32_OperatingSystem).Version
 $list_packages_to_update = @() # Contient la liste des paquets avec une mise à jour disponible.
 $os_release = (Get-WmiObject -Class Win32_OperatingSystem).Version
 $os_release_min = "10.0.22"
 $powershell_release = $PSVersionTable.PSVersion.Major
-$powershell_release = $PSVersionTable.PSVersion.Major
 $powershell_release_min = "7"
-
-
-### AFFICHAGE DE L'ASCII ART ###
-
-function ascii_art_landry {
-    
-    Write-Host @'
-
-    
-    $$\                                $$\                            $$$$$$\                                         $$\                     
-    $$ |                               $$ |                          $$  __$$\                                        $$ |                    
-    $$ |      $$$$$$\  $$$$$$$\   $$$$$$$ | $$$$$$\  $$\   $$\       $$ /  \__| $$$$$$\  $$$$$$$\  $$$$$$$$\ $$$$$$\  $$ | $$$$$$\  $$$$$$$$\ 
-    $$ |      \____$$\ $$  __$$\ $$  __$$ |$$  __$$\ $$ |  $$ |      $$ |$$$$\ $$  __$$\ $$  __$$\ \____$$  |\____$$\ $$ |$$  __$$\ \____$$  |
-    $$ |      $$$$$$$ |$$ |  $$ |$$ /  $$ |$$ |  \__|$$ |  $$ |      $$ |\_$$ |$$ /  $$ |$$ |  $$ |  $$$$ _/ $$$$$$$ |$$ |$$$$$$$$ |  $$$$ _/ 
-    $$ |     $$  __$$ |$$ |  $$ |$$ |  $$ |$$ |      $$ |  $$ |      $$ |  $$ |$$ |  $$ |$$ |  $$ | $$  _/  $$  __$$ |$$ |$$   ____| $$  _/   
-    $$$$$$$$\\$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |      \$$$$$$  |\$$$$$$  |$$ |  $$ |$$$$$$$$\\$$$$$$$ |$$ |\$$$$$$$\ $$$$$$$$\ 
-    \________|\_______|\__|  \__| \_______|\__|       \____$$ |       \______/  \______/ \__|  \__|\________|\_______|\__| \_______|\________|
-                                                     $$\   $$ |                                                                               
-                                                     \$$$$$$  |                                                                               
-                                                      \______/                                                                                
-
-'@
-}
 
 
 ### AFFICHAGE DU VERSIONNING ###
@@ -98,9 +66,6 @@ function choco_check {
 
     Start-Sleep -Seconds 1
 
-    $choco_installed = (Get-Command choco.exe).Name
-    $choco_version = choco -v
-
     if ($null -ne $choco_installed){
         Write-Host -ForegroundColor Blue "[INFO] Chocolatey est installé (version"$choco_version").`n"
         Start-Sleep -Seconds 2
@@ -124,9 +89,6 @@ function choco_check {
 
 ### INSTALLATION DE CHOCOLATEY (DEVELOPPEMENT A FAIRE DEPUIS LE 29/09/2024) ###
 
-
-### INSTALLATION DE CHOCOLATEY (DEVELOPPEMENT A FAIRE DEPUIS LE 29/09/2024) ###
-
 function choco_install {
 
     Write-Host @"
@@ -136,13 +98,9 @@ function choco_install {
 
 "@
     Start-Sleep -Seconds 2
-    Start-Sleep -Seconds 2
     Set-ExecutionPolicy Bypass -Scope Process -Force
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
     Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-
-    #Write-Host "Chocolatey n'est pas installé. Le script va donc prioriser winget.`n`nPour l'installer, accédez à l'url suivante :`nhttps://chocolatey.org/install"
-
 
     #Write-Host "Chocolatey n'est pas installé. Le script va donc prioriser winget.`n`nPour l'installer, accédez à l'url suivante :`nhttps://chocolatey.org/install"
 
@@ -216,7 +174,7 @@ function list_package_system {
 
             # Conditionne le flux seulement si la ligne ne contient pas les regex suivantes.
             if ($line -notmatch '^[-]+$' -and $line -notmatch '^\s*-\s*$|^\s*$' -and $line -notmatch '^\s*\\\s*$' -and $line -notmatch '^Nom\s+ID\s+Version\s+Source$') {
-
+                    
                 $columns1 = $line.Substring(0,47)
                 $columns2 = $line.Substring(48,46)
                 $columns3 = $line.Substring(94,18)
@@ -224,7 +182,7 @@ function list_package_system {
                 # Récupère la longueur de la ligne (cette longueur commence au premier caractère et termine au dernier (en comptant les espaces au milieu))
                 $length = $line.length
 
-                if ($length -le 112) {
+                if ($length -le 113 -and $length -gt 20) {
 
                     $package_object = [PSCustomObject]@{
                         Name = $columns1
@@ -236,7 +194,11 @@ function list_package_system {
 
                     $list_packages_object += $package_object
 
-                } else {
+                } 
+                elseif ($length -gt 113) {
+
+		    $length
+                    $line
 
                     $columns4 = $line.Substring(112,6)
 
@@ -253,7 +215,8 @@ function list_package_system {
             }
         }
 
-    } else {
+    } 
+    else {
 
         # Itère sur chacune des lignes du fichier.
         foreach ($line in $list_packages) {
@@ -269,7 +232,7 @@ function list_package_system {
                 # Récupère la longueur de la ligne (cette longueur commence au premier caractère et termine au dernier (en comptant les espaces au milieu))
                 $length = $line.length
 
-                if ($length -le 112) {
+                if ($length -le 113 -and $length -gt 20) {
 
                     $package_object = [PSCustomObject]@{
                         Name = $columns1
@@ -281,7 +244,8 @@ function list_package_system {
 
                     $list_packages_object += $package_object
 
-                } else {
+                }
+                elseif ($length -gt 113) {
 
                     $columns5 = $line.Substring(123,6)
 
@@ -302,36 +266,31 @@ function list_package_system {
     $global:list_packages_to_update = @()
     $list_packages_to_update = $list_packages_object | Where-Object { $null -ne $_.Available } | Select-Object Name,Disponible | Format-Table
 
-    #foreach ($object in $list_packages_to_update) {
-        #$global:list_packages_updates += $object
-        # Segmente une ligne (qui représente les informations d'un paquet) en plusieurs colonnes. Le séparateur est 2 occurences ou plus de caractère espace.
-        # $columns = $package -split '\s{2,}'
-        # $columns = $package -split '\s{2,}'
-        #Write-Host $columns
-        #Start-Sleep -Seconds 2
-        # Crée un objet personnalisé pour nommer chaque colonne.
+<#  foreach ($object in $list_packages_to_update) {
+        $global:list_packages_updates += $object
+        Segmente une ligne (qui représente les informations d'un paquet) en plusieurs colonnes. Le séparateur est 2 occurences ou plus de caractère espace.
+        $columns = $package -split '\s{2,}'
+        $columns = $package -split '\s{2,}'
+        Write-Host $columns
+        Start-Sleep -Seconds 2
+        Crée un objet personnalisé pour nommer chaque colonne.
+    }
+        Write-Host $package_object
+        Vérifie si certaines colonnes contiennent des valeurs spécifiques.
+        if ($columns.Length -ge 4 -and $columns[3] -ne '' ) {
 
-        #}
+        if ($object.Disponible -like "winget" -and $columns.Version[2] -ne "Version") {}
+        if ($columns.Length -ge 4 -and $columns[3] -ne '' ) {}
 
-        #}
-        #Write-Host $package_object
-        # Vérifie si certaines colonnes contiennent des valeurs spécifiques.
-        #if ($columns.Length -ge 4 -and $columns[3] -ne '' ) {
-
-        #if ($object.Disponible -like "winget" -and $columns.Version[2] -ne "Version") {
-        #if ($columns.Length -ge 4 -and $columns[3] -ne '' ) {
-
-        #if ($object.Disponible -like "winget" -and $columns.Version[2] -ne "Version") {
-            # Ajoute le paquet à la liste des paquets à mettre à jour.
+        if ($object.Disponible -like "winget" -and $columns.Version[2] -ne "Version") {
+            Ajoute le paquet à la liste des paquets à mettre à jour.
             
-            #$global:list_packages_updates += $package_object.Name
+            $global:list_packages_updates += $package_object.Name
             
-            #$global:list_packages_updates += $package_object.Name
-            # Il faudrait mettre ce résultat sous forme de tableau avec un formattage propre, si pas le cas.
-        #}
-    #}
-        #}
-    #}
+            $global:list_packages_updates += $package_object.Name
+            Il faudrait mettre ce résultat sous forme de tableau avec un formattage propre, si pas le cas.
+        }
+    #>
     Start-Sleep -Seconds 1
 }
 
@@ -516,10 +475,33 @@ function exit_error {
     
 }
 
+
+### AFFICHAGE DE L'ASCII ART ###
+
+function ascii_art_landry {
+    
+    Write-Host @'
+
+    
+    $$\                                $$\                            $$$$$$\                                         $$\                     
+    $$ |                               $$ |                          $$  __$$\                                        $$ |                    
+    $$ |      $$$$$$\  $$$$$$$\   $$$$$$$ | $$$$$$\  $$\   $$\       $$ /  \__| $$$$$$\  $$$$$$$\  $$$$$$$$\ $$$$$$\  $$ | $$$$$$\  $$$$$$$$\ 
+    $$ |      \____$$\ $$  __$$\ $$  __$$ |$$  __$$\ $$ |  $$ |      $$ |$$$$\ $$  __$$\ $$  __$$\ \____$$  |\____$$\ $$ |$$  __$$\ \____$$  |
+    $$ |      $$$$$$$ |$$ |  $$ |$$ /  $$ |$$ |  \__|$$ |  $$ |      $$ |\_$$ |$$ /  $$ |$$ |  $$ |  $$$$ _/ $$$$$$$ |$$ |$$$$$$$$ |  $$$$ _/ 
+    $$ |     $$  __$$ |$$ |  $$ |$$ |  $$ |$$ |      $$ |  $$ |      $$ |  $$ |$$ |  $$ |$$ |  $$ | $$  _/  $$  __$$ |$$ |$$   ____| $$  _/   
+    $$$$$$$$\\$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |      \$$$$$$  |\$$$$$$  |$$ |  $$ |$$$$$$$$\\$$$$$$$ |$$ |\$$$$$$$\ $$$$$$$$\ 
+    \________|\_______|\__|  \__| \_______|\__|       \____$$ |       \______/  \______/ \__|  \__|\________|\_______|\__| \_______|\________|
+                                                     $$\   $$ |                                                                               
+                                                     \$$$$$$  |                                                                               
+                                                      \______/                                                                                
+
+'@
+}
+
 function main {
 
     versionning
-    choco_install_check    # Installe Chocolatey
+    #choco_install_check    # Installe Chocolatey
     winget_prerequisite    # Vérifie les prérequis de compatibilité pour winget
     list_package_system    
     update_package_auto
@@ -539,10 +521,6 @@ main
 #try {
 #    Start-Transcript -Path "C:\temp\error_log.txt"
     # Le code que tu soupçonnes de causer l'erreur
-
-
-# Il faudrait indiquer à l'utilisateur la liste des applications dont la source n'est pas winget
-
 
 # Il faudrait indiquer à l'utilisateur la liste des applications dont la source n'est pas winget
 
