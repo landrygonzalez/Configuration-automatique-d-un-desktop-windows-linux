@@ -197,8 +197,8 @@ function list_package_system {
                 } 
                 elseif ($length -gt 113) {
 
-		    $length
-                    $line
+		            #$length
+                    #$line
 
                     $columns4 = $line.Substring(112,6)
 
@@ -315,8 +315,6 @@ function update_package_auto {
         Write-Host -ForegroundColor Green "[SUCCESS] Vos logiciels gérés par winget sont déjà tous à jour, vous n'avez rien à faire.`n"
         # Inutile car on vérifie la version powershell en début : Write-Host -ForegroundColor Yellow "[WARNING] L'application powershell ne pourra jamais être mise à jour avec ce script. Pensez donc à vérifier sa version.`n"
         Start-Sleep -Seconds 1
-        Write-Host -ForegroundColor Magenta "[INTERACTION] Appuyez sur une touche pour continuer...`n"
-        [void][System.Console]::ReadKey($true)  # Attend que l'utilisateur appuie sur une touche
         exit_no_error
 
     } else {
@@ -450,11 +448,10 @@ Contactez-moi pour toute demande ou incident :
 
 "@
 
-    for ($i = 19; $i -gt 0; $i--) {
-        Write-Host -ForegroundColor Blue "[INFO] Le script se fermera automatiquement dans $i secondes..." -NoNewline
-        Start-Sleep -Seconds 1  # Pause d'une seconde
-        Write-Host "`r" -NoNewLine  # Retour au début de la ligne
-    }
+    Write-Host "`r" -NoNewLine
+
+    Write-Host -ForegroundColor Magenta "[INTERACTION] Appuyez sur une touche pour continuer...`n"
+    [void][System.Console]::ReadKey($true)  # Attend que l'utilisateur appuie sur une touche
 
     ascii_art_landry
     Start-Sleep -Seconds 3
@@ -483,17 +480,17 @@ function ascii_art_landry {
     Write-Host @'
 
     
-    $$\                                $$\                            $$$$$$\                                         $$\                     
-    $$ |                               $$ |                          $$  __$$\                                        $$ |                    
-    $$ |      $$$$$$\  $$$$$$$\   $$$$$$$ | $$$$$$\  $$\   $$\       $$ /  \__| $$$$$$\  $$$$$$$\  $$$$$$$$\ $$$$$$\  $$ | $$$$$$\  $$$$$$$$\ 
-    $$ |      \____$$\ $$  __$$\ $$  __$$ |$$  __$$\ $$ |  $$ |      $$ |$$$$\ $$  __$$\ $$  __$$\ \____$$  |\____$$\ $$ |$$  __$$\ \____$$  |
-    $$ |      $$$$$$$ |$$ |  $$ |$$ /  $$ |$$ |  \__|$$ |  $$ |      $$ |\_$$ |$$ /  $$ |$$ |  $$ |  $$$$ _/ $$$$$$$ |$$ |$$$$$$$$ |  $$$$ _/ 
-    $$ |     $$  __$$ |$$ |  $$ |$$ |  $$ |$$ |      $$ |  $$ |      $$ |  $$ |$$ |  $$ |$$ |  $$ | $$  _/  $$  __$$ |$$ |$$   ____| $$  _/   
-    $$$$$$$$\\$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |      \$$$$$$  |\$$$$$$  |$$ |  $$ |$$$$$$$$\\$$$$$$$ |$$ |\$$$$$$$\ $$$$$$$$\ 
-    \________|\_______|\__|  \__| \_______|\__|       \____$$ |       \______/  \______/ \__|  \__|\________|\_______|\__| \_______|\________|
-                                                     $$\   $$ |                                                                               
-                                                     \$$$$$$  |                                                                               
-                                                      \______/                                                                                
+$$\                                $$\                            $$$$$$\                                         $$\                     
+$$ |                               $$ |                          $$  __$$\                                        $$ |                    
+$$ |      $$$$$$\  $$$$$$$\   $$$$$$$ | $$$$$$\  $$\   $$\       $$ /  \__| $$$$$$\  $$$$$$$\  $$$$$$$$\ $$$$$$\  $$ | $$$$$$\  $$$$$$$$\ 
+$$ |      \____$$\ $$  __$$\ $$  __$$ |$$  __$$\ $$ |  $$ |      $$ |$$$$\ $$  __$$\ $$  __$$\ \____$$  |\____$$\ $$ |$$  __$$\ \____$$  |
+$$ |      $$$$$$$ |$$ |  $$ |$$ /  $$ |$$ |  \__|$$ |  $$ |      $$ |\_$$ |$$ /  $$ |$$ |  $$ |  $$$$ _/ $$$$$$$ |$$ |$$$$$$$$ |  $$$$ _/ 
+$$ |     $$  __$$ |$$ |  $$ |$$ |  $$ |$$ |      $$ |  $$ |      $$ |  $$ |$$ |  $$ |$$ |  $$ | $$  _/  $$  __$$ |$$ |$$   ____| $$  _/   
+$$$$$$$$\\$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |      \$$$$$$  |\$$$$$$  |$$ |  $$ |$$$$$$$$\\$$$$$$$ |$$ |\$$$$$$$\ $$$$$$$$\ 
+\________|\_______|\__|  \__| \_______|\__|       \____$$ |       \______/  \______/ \__|  \__|\________|\_______|\__| \_______|\________|
+                                                 $$\   $$ |                                                                               
+                                                 \$$$$$$  |                                                                               
+                                                  \______/                                                                                
 
 '@
 }
