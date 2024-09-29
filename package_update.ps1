@@ -42,6 +42,8 @@ $powershell_release_min = "7"
 function ascii_art_landry {
     
     Write-Host @'
+
+    
     $$\                                $$\                            $$$$$$\                                         $$\                     
     $$ |                               $$ |                          $$  __$$\                                        $$ |                    
     $$ |      $$$$$$\  $$$$$$$\   $$$$$$$ | $$$$$$\  $$\   $$\       $$ /  \__| $$$$$$\  $$$$$$$\  $$$$$$$$\ $$$$$$\  $$ | $$$$$$\  $$$$$$$$\ 
@@ -480,12 +482,12 @@ function timing_write {
 function exit_no_error {
     
     Write-Host @" 
-    Merci beaucoup d'avoir utilisé ce script. 
+Merci beaucoup d'avoir utilisé ce script. 
     
-    Contactez-moi pour toute demande ou incident : 
-        - Par mail : landry.gonzalez@gmail.com
-        - Sur Github : https://github.com/landrygonzalez
-        - Sur Linkedin : https://www.linkedin.com/in/landry-gonzalez-6895801a/
+Contactez-moi pour toute demande ou incident : 
+    - Par mail : landry.gonzalez@gmail.com
+    - Sur Github : https://github.com/landrygonzalez
+    - Sur Linkedin : https://www.linkedin.com/in/landry-gonzalez-6895801a/
 
 "@
 
@@ -496,7 +498,7 @@ function exit_no_error {
     }
 
     ascii_art_landry
-    Start-Sleep -Seconds 2
+    Start-Sleep -Seconds 3
     exit 0
 }
 
