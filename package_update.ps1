@@ -82,7 +82,6 @@ timing_write -time 3
 ### VERIFICATION DE L'INSTALLATION DE CHOCOLATEY ###
 
 function choco_check {
-function choco_check {
 
     Write-Host @"
 ###################################################################
@@ -102,7 +101,6 @@ function choco_check {
 
     if ($null -ne $choco_installed){
         Write-Host -ForegroundColor Blue "[INFO] Chocolatey est installé (version"$choco_version").`n"
-        Write-Host -ForegroundColor Blue "[INFO] Chocolatey est installé (version"$choco_version").`n"
         Start-Sleep -Seconds 2
     } else {
         Write-Host -ForegroundColor Yellow "[WARNING] Chocolatey n'est pas installé.`n"
@@ -111,13 +109,7 @@ function choco_check {
 [INTERACTION] Que voulez vous faire ? Entrez le chiffre correspondant à votre choix :
     1. Installer Chocolatey (fonctionnalité désactivée le 26/09/2024, développement en cours)
     2. Poursuivre avec Winget
-    2. Poursuivre avec Winget
 "@
-        $choice = Read-Host ""
-        switch ($choice) {
-            # 1 { choco_install } Désactivé car développement en cours.
-            2 { winget_prerequisite }
-            default { Write-Host -ForegroundColor Red "[CRITICAL] Choix invalide"; Start-Sleep -Seconds 2; choco_check }
         $choice = Read-Host ""
         switch ($choice) {
             # 1 { choco_install } Désactivé car développement en cours.
@@ -159,17 +151,12 @@ function choco_install {
 
 function winget_prerequisite {
 
-### VERIFICATION DES PRE-REQUIS ###
-
-function winget_prerequisite {
-
     Write-Host @"
 ###################################################################
 # WINGET - Vérification des pré-requis ############################
 ###################################################################
 
 "@
-    Start-Sleep -Seconds 2
     Start-Sleep -Seconds 2
 
     # Vérifie que les versions minimales du système d'exploitation et de l'interprêteur de commandes sont compatibles avec le script.
@@ -192,8 +179,6 @@ function winget_prerequisite {
     - L'interprêteur powershell est en version $powershell_release (doit être en version $powershell_release_min au minimum).
 
 '@
-        Start-Sleep -Seconds 2
-        exit_error
         Start-Sleep -Seconds 2
         exit_error
     } else {
@@ -432,10 +417,8 @@ function packages_non_winget {
 "@
     
     $global:list_packages_notWinget = @()
-    $global:list_packages_notWinget = @()
     foreach ($package in $list_packages) {
         # Divise la ligne en colonnes toutes les 2 occurences d'espace au minimum :
-        $columns = $package -split '\.{,47}' #'\s{2,}'
         $columns = $package -split '\.{,47}' #'\s{2,}'
         # Crée un objet personnalisé pour nommer les colonnes :
         $package_object = [PSCustomObject]@{
@@ -448,28 +431,19 @@ function packages_non_winget {
         #Write-Host $package_object
         # Teste si la propriété Source de l'objet n'est pas winget, et si Available n'a pas pris la valeur winget par erreur, et si le nom n'est pas vide.
         if ($package_object.Source -notlike "winget" -and $package_object.Available -notlike "winget" -and $package_object.Version -notlike "winget" -and $package_object.Name -notlike $null) {
-        #Write-Host $package_object
-        # Teste si la propriété Source de l'objet n'est pas winget, et si Available n'a pas pris la valeur winget par erreur, et si le nom n'est pas vide.
-        if ($package_object.Source -notlike "winget" -and $package_object.Available -notlike "winget" -and $package_object.Version -notlike "winget" -and $package_object.Name -notlike $null) {
             $list_packages_notWinget += $package_object.Name
-            #Write-Host $package_object.Name
             #Write-Host $package_object.Name
         }
     }
     #Write-Host $list_packages_notWinget
     Write-Host -ForegroundColor Yellow "[WARNING] Les logiciels suivants n'ont pas été installés par winget :`n`n"
     $list_packages_notWinget
-    #Write-Host $list_packages_notWinget
-    Write-Host -ForegroundColor Yellow "[WARNING] Les logiciels suivants n'ont pas été installés par winget :`n`n"
-    $list_packages_notWinget
 
-    for ($i = 9; $i -gt 0; $i--) {
     for ($i = 9; $i -gt 0; $i--) {
         Write-Host -ForegroundColor Blue "[INFO] Fermeture du script dans $i secondes" -NoNewline
         Start-Sleep -Seconds 1  # Pause d'une seconde
         Write-Host "`r" -NoNewLine  # Retour au début de la ligne
     }
-
 }
 
 
@@ -484,11 +458,8 @@ function timing_write {
     # Compte à rebours
     while ($time -gt 0) {
         Write-Host -ForegroundColor Blue "[INFO] Mise en attente de $time secondes." -NoNewline
-    while ($time -gt 0) {
-        Write-Host -ForegroundColor Blue "[INFO] Mise en attente de $time secondes." -NoNewline
         Start-Sleep -Seconds 1
         Write-Host "`r" -NoNewLine  # Retour au début de la ligne
-        $time--  # Décrémente la variable $time
         $time--  # Décrémente la variable $time
     }
     Write-Host -ForegroundColor Blue "[INFO] L'exécution du script se poursuit.`n"
@@ -550,7 +521,7 @@ function main {
     winget_prerequisite    # Vérifie les prérequis de compatibilité pour winget
     list_package_system    
     update_package_auto
-    packages_non_winget
+    #packages_non_winget
     exit_no_error
 }
 
