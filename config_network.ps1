@@ -9,7 +9,7 @@
     Aucun
 
 .NOTES
-    
+    Faire évoluer en ajoutant la configuration DHCP ou IP puis lancer un scan réseau avec Test-NetConnection -ComputerName <adresse_ip> -Port <numéro_de_port>
 
 .EXECUTION
     .\config_network.ps1
@@ -32,16 +32,58 @@ commande2
 commande3
 #>
 
-$nom_interface_toutes = Get-NetAdapter | Where-Object { $_.Status -eq "Up" } | Select-Object -Property Name # Liste toutes les interfaces réseaux qui sont up.
+# Liste les interfaces réseaux connectées :
+$name_interface_all = Get-NetAdapter | Where-Object { $_.Status -eq "Up" } | Select-Object -Property Name
+[array]$interface_ipv6_all = @()
 
-# Pour chaque interface réseau up, vérifier si l'IPv6 est présente :
-Foreach ($nom_interface in $nom_interface_toutes){
-    #Write-Host $nom_interface
-    Get-NetIPInterface -InterfaceAlias $nom_interface.Name | Where-Object {$_.AddressFamily -eq "IPv6"}
-    #Get-NetIPInterface -InterfaceAlias $nom_interface.Name -AddressFamily IPv6
+###########################
+# II. FONCTION PRINCIPALE #
+###########################
+
+function main {
+
+    Write-Host "Vous avez" $name_interface_all.Count "interface(s) réseau(x) de connectée(s)."
+    
+    if ($name_interface_all.Count -gt 1){
+        Write-Host "Vous ne devriez avoir qu'une seule interface réseau pour votre accès Internet, sauf dans les cas suivants :`n
+        - Vous vous connectez à votre réseau par ondes wifi à certains moments et par câble réseau à d'autres instants.
+        - Vous utilisez un VPN, lequel vous créera des interfaces virtuelles pour son fonctionnement.
+        - Vous avez installé un hyperviseur pour créer des machines virtuelles, lequel a besoin d'interfaces virtuelles.`n"
+        Read-Host "Contactez votre administrateur pour envisager de les désactiver.`nPressez ensuite une touche pour poursuivre l'exécution du script."
+    } elseif ($name_interface_all.Count -lt 1) {
+        Write-Host "Le script a rencontré une erreur. Contactez le développeur du script."
+        Start-Sleep -Seconds 3
+        exit 1
+    }
+
+    # Pour chaque interface réseau, vérifier si l'IPv6 est présente :
+    Foreach ($name_interface in $name_interface_all){
+        #Write-Host $nom_interface
+        $interface_ipv6 = Get-NetIPInterface -InterfaceAlias $name_interface.Name | Where-Object {$_.AddressFamily -eq "IPv6"} | Select-Object -Property InterfaceAlias
+        $interface_ipv6_all += $interface_ipv6.InterfaceAlias
+        #Get-NetIPInterface -InterfaceAlias $nom_interface.Name -AddressFamily IPv6
+    }
+
+    Write-Host "Aïe, l'IPv6 est activée sur $interface_ipv6_all.`n Voulez-vous désactiver l'IPv6 sur toutes ces interfaces ?"
+    Read-Host "Approuvez en appuyant sur une touche."
+    
+    Foreach ($name_interface in $interface_ipv6_all){
+        Disable-NetAdapterBinding -Name $name_interface -ComponentID ms_tcpip6
+    }
+
+    [array]$interface_ipv6_all = @()
+    Foreach ($name_interface in $name_interface_all){
+        #Write-Host $nom_interface
+        $interface_ipv6 = Get-NetIPInterface -InterfaceAlias $name_interface.Name | Where-Object {$_.AddressFamily -eq "IPv6"} | Select-Object -Property InterfaceAlias
+        $interface_ipv6_all += $interface_ipv6.InterfaceAlias
+        #Get-NetIPInterface -InterfaceAlias $nom_interface.Name -AddressFamily IPv6
+    }
+
+    Write-Host "L'IPv6 est activée sur $interface_ipv6_all. S'il y a un problème, contactez le développeur du script."
+    Start-Sleep -Seconds 5
 }
-Disable-NetAdapterBinding -Name "Wi-Fi" -ComponentID ms_tcpip6
 
+main
 
 #################################
 # II. DECLARATION DES FONCTIONS #
