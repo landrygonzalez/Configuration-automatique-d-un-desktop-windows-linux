@@ -24,11 +24,11 @@
 $list_packages_to_update = @() # Liste des paquets avec une mise à jour disponible
 $os_release = (Get-WmiObject -Class Win32_OperatingSystem).Version # Version de windows
 $os_release_min = "10.0.22" # Versions windows minimale (correspond à windows 11)
-$powershell_release = $PSVersionTable.PSVersion.Major # Version de powershell
+[string]$powershell_release = $PSVersionTable.PSVersion # Version de powershell
 $powershell_release_min = "7" # Version powershell minimale
 
 # Mise à jour des sources winget :
-winget source update
+winget source update | Out-null
 
 
 ### AFFICHAGE DU VERSIONNING ###
@@ -41,8 +41,8 @@ function versionning {
 ###################################################################
 Nom du script .................................. package_update.ps1
 Date de création ....................................... 20/06/2024
-Version ....................................................... 1.2
-Dernière mise à jour ................................... 26/09/2024
+Version ..................................................... 1.2.1
+Dernière mise à jour ................................... 31/10/2024
 Auteur ............................................ Landry Gonzalez
 Contact ................................. landry.gonzalez@gmail.com
 ###################################################################
@@ -79,8 +79,9 @@ function choco_check {
 [INTERACTION] Que voulez vous faire ? Entrez le chiffre correspondant à votre choix :
     1. Installer Chocolatey (fonctionnalité désactivée le 26/09/2024, développement en cours)
     2. Poursuivre avec Winget
+
 "@
-        $choice = Read-Host ""
+        $choice = Read-Host "Inscrivez votre choix "
         switch ($choice) {
             # 1 { choco_install } Désactivé car développement en cours.
             2 { winget_prerequisite }
@@ -316,7 +317,18 @@ function update_package_auto {
 
 "@
 
-    winget upgrade --all --include-unknown --disable-interactivity
+Write-Host -ForegroundColor Magenta @"
+[INTERACTION] Voulez-vous immédiatement et automatiquement exécuter les mises à jour de tous vos logiciels gérés par winget ? Entrez le chiffre correspondant à votre choix :
+    1. Installer les mises à jour.
+    2. Refuser les mises à jour.
+
+"@
+    $choice = Read-Host "Inscrivez votre choix "
+    switch ($choice) {
+        1 { $global:result = winget upgrade --all --include-unknown --disable-interactivity ; exit_no_error }
+        2 { exit_no_error }
+        default { Write-Host -ForegroundColor Red "[CRITICAL] Choix invalide"; Start-Sleep -Seconds 2; choco_check }
+    }
 
     <#
     Start-Sleep -Seconds 1
@@ -450,8 +462,14 @@ function timing_write {
 }
 
 function exit_no_error {
-    
+
+    if ($result -ilike "*aucun package*"){
+        Write-Host -ForegroundColor Blue "`n[INFO] Le script n'a pas détecté de logiciels à mettre à jour qui soient gérés par winget."
+        Start-Sleep -Seconds 3
+    }
+
     Write-Host @" 
+
 Merci beaucoup d'avoir utilisé ce script. 
     
 Contactez-moi pour toute demande ou incident : 
@@ -460,27 +478,29 @@ Contactez-moi pour toute demande ou incident :
     - Sur Linkedin : https://www.linkedin.com/in/landry-gonzalez-6895801a/
 
 "@
-
+    Start-Sleep -Seconds 3
     Write-Host "`r" -NoNewLine
-
-    Write-Host -ForegroundColor Magenta "[INTERACTION] Appuyez sur une touche pour continuer...`n"
+    Write-Host -ForegroundColor Magenta "[INTERACTION] Appuyez sur une touche pour fermer le script.`n"
     [void][System.Console]::ReadKey($true)  # Attend que l'utilisateur appuie sur une touche
 
-    ascii_art_landry
-    Start-Sleep -Seconds 3
+    #ascii_art_landry
+    #Start-Sleep -Seconds 3
     exit 0
 }
 
 function exit_error {
         # Compte à rebours
-        for ($i = 9; $i -gt 0; $i--) {
+        Write-Host -ForegroundColor Magenta "[INTERACTION] Appuyez sur une touche pour fermer le script.`n"
+        [void][System.Console]::ReadKey($true)  # Attend que l'utilisateur appuie sur une touche
+
+<#        for ($i = 9; $i -gt 0; $i--) {
             Write-Host -ForegroundColor Blue "[INFO] Fermeture du script dans $i secondes" -NoNewline
             Start-Sleep -Seconds 1  # Pause d'une seconde
             Write-Host "`r" -NoNewLine  # Retour au début de la ligne
         }
         Start-Sleep -Seconds 1
         Write-Host "`r" -NoNewLine  # Retour au début de la ligne
-        Write-Host "`n"
+        Write-Host "`n"#>
         exit 1
     
 }
@@ -506,6 +526,8 @@ $$$$$$$$\\$$$$$$$ |$$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$ |      \$$$$$$  |\$$$$
                                                   \______/                                                                                
 
 '@
+Read-Host ""
+
 }
 
 function main {
@@ -517,8 +539,9 @@ function main {
     update_package_auto
     #packages_non_winget
     #exit_no_error
-    Start-Sleep -Seconds 10
-    exit 0
+    #ascii_art_landry
+    #Start-Sleep -Seconds 10
+    #exit 0
 }
 
 main
