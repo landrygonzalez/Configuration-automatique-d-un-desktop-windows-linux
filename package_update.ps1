@@ -21,12 +21,13 @@
 
 ### DECLARATION DES VARIABLES GLOBALES ###
 
-$list_packages_to_update = @() # Contient la liste des paquets avec une mise à jour disponible.
-$os_release = (Get-WmiObject -Class Win32_OperatingSystem).Version
-$os_release_min = "10.0.22"
-$powershell_release = $PSVersionTable.PSVersion.Major
-$powershell_release_min = "7"
+$list_packages_to_update = @() # Liste des paquets avec une mise à jour disponible
+$os_release = (Get-WmiObject -Class Win32_OperatingSystem).Version # Version de windows
+$os_release_min = "10.0.22" # Versions windows minimale (correspond à windows 11)
+$powershell_release = $PSVersionTable.PSVersion.Major # Version de powershell
+$powershell_release_min = "7" # Version powershell minimale
 
+# Mise à jour des sources winget :
 winget source update
 
 
