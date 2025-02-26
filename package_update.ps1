@@ -5,7 +5,7 @@
 .DESCRIPTION
     None
 
-.PARAMETER 
+.PARAMETER
     None
 
 .NOTES
@@ -163,12 +163,12 @@ function winget_prerequisite {
 function list_package_system {
 
     # Création du fichier dans $HOME et ajout à l'intérieur de la liste des paquets du système. 
-    $date = Get-Date -Format "yyyyMMddHHmmss"
-    $file_list_package = "$HOME\winget_list_package_system_${date}.txt"
-    winget list > $file_list_package # "winget list" liste les applications installées sur le système (qu'elles aient été installées par winget ou un autre gestionnaire de paquets)
+    #$date = Get-Date -Format "yyyyMMddHHmmss"
+    #$file_list_package = "$HOME\winget_list_package_system_${date}.txt"
+    #winget list > $file_list_package # "winget list" liste les applications installées sur le système (qu'elles aient été installées par winget ou un autre gestionnaire de paquets)
     #Start-Sleep -Seconds 5
 
-    $list_packages = Get-Content -Path $file_list_package
+    #$list_packages = Get-Content -Path $file_list_package
     $global:list_packages_object = @()
 
     # Vérifie si le fichier ne contient pas de paquets à mettre à jour car la colonne Disponible rallonge chaque ligne et implique donc un traitement différent du fichier.
@@ -317,6 +317,10 @@ function update_package_auto {
 
 "@
 
+    winget upgrade
+
+    Write-Host @"
+
 Write-Host -ForegroundColor Magenta @"
 [INTERACTION] Voulez-vous immédiatement et automatiquement exécuter les mises à jour de tous vos logiciels gérés par winget ? Entrez le chiffre correspondant à votre choix :
     1. Installer les mises à jour.
@@ -399,29 +403,82 @@ function packages_non_winget {
 ###################################################################
 
 "@
-    
+
     $global:list_packages_notWinget = @()
+    
+    # Calculer les longueurs :
+    $winget = winget list
+    $winget1 = $winget -split "`n"
+    $winget2 = $winget1 | Where-Object {$_ -notmatch "winget"}
+
+    $startIndex = ($winget2 | Select-String -Pattern "Nom" | Select-Object -First 1).LineNumber
+    
+    # Afficher les lignes à partir de l'index trouvé
+    if ($startIndex -ne $null) {
+        #$lines = $winget2 -split "`n"
+        $lines[$startIndex - 1..($lines.Count - 1)]
+    }
+
+    $winget = winget list
+$winget1 = $winget -split "`n"
+$winget2 = $winget1 | Where-Object {$_ -notmatch "winget"}
+
+# Trouver l'index de la ligne contenant "Nom"
+$startIndex = ($winget2 | Select-String -Pattern "Nom" | Select-Object -First 1).LineNumber
+
+# Afficher la ligne contenant "Nom" et toutes les lignes qui suivent
+if ($startIndex -ne $null) {
+    # Créer une plage d'index à partir de la ligne "Nom" jusqu'à la fin
+    $indexRange = ($startIndex - 1)..($winget2.Count - 1)
+    
+    # Afficher les lignes
+    $winget2[$indexRange]
+}
+    
+    <#
+    $winget2 = $winget1 | Where-Object {$_.Contains("Nom") -and $_.Contains("ID") -and $_.Contains("Version")} #$winget -split "`n" | Select-Object -Index 6
+
+    $nom_index = $winget1.Indexof("Nom")
+    $id_index = $winget1.Indexof("ID")
+    $version_index = $winget1.Indexof("Version")
+    $disponible_index = $winget1.Indexof("Disponible")
+    $source_index = $winget1.IndexOf("Source")
+    
+    if ($disponible_index -eq "-1") {
+        $disponible_index = $source_index
+    }
+
+    $nom_length = $id_index - $nom_index
+    $id_length = $version_index - $id_index
+    $version_length = $disponible_index - $version_index
+    $disponible_length = $source_index - $disponible_index
+    $source_length = $package.length - $source_index
+    
     foreach ($package in $list_packages) {
         # Divise la ligne en colonnes toutes les 2 occurences d'espace au minimum :
-        $columns = $package -split '\.{,47}' #'\s{2,}'
+        #$columns_nom = $package.Substring($nom_index,$) #-split '\.{,47}' #'\s{2,}'
         # Crée un objet personnalisé pour nommer les colonnes :
         $package_object = [PSCustomObject]@{
-            Name = $columns[0]
-            Id = $columns[1]
-            Version = $columns[2]
-            Available = $columns[3]
-            Source = $columns[4]
+            Name = $package.Substring($nom_index,$nom_length) #$columns[0]
+            Id = $package.Substring($id_index,$id_length) #$columns[1]
+            Version = $package.Substring($version_index,$version_length) #$columns[2]
+            Disponible = $package.Substring($disponible_index,$disponible_length) #$columns[3]
+            Source = $package.Substring($source_index,$source_length) #$columns[4]
         }
         #Write-Host $package_object
         # Teste si la propriété Source de l'objet n'est pas winget, et si Available n'a pas pris la valeur winget par erreur, et si le nom n'est pas vide.
-        if ($package_object.Source -notlike "winget" -and $package_object.Available -notlike "winget" -and $package_object.Version -notlike "winget" -and $package_object.Name -notlike $null) {
-            $list_packages_notWinget += $package_object.Name
+        if ($package_object.Source -notlike "winget" <#-and $package_object.Available -notlike "winget" -and $package_object.Version -notlike "winget"#> #-and $package_object.Name -notlike $null) {
+            #$list_packages_notWinget += $package_object.Name
             #Write-Host $package_object.Name
-        }
-    }
+        #}
+    #}
+
+    #>
+
     #Write-Host $list_packages_notWinget
     Write-Host -ForegroundColor Yellow "[WARNING] Les logiciels suivants n'ont pas été installés par winget :`n`n"
-    $list_packages_notWinget
+    #$list_packages_notWinget
+    $winget2
 
     for ($i = 9; $i -gt 0; $i--) {
         Write-Host -ForegroundColor Blue "[INFO] Fermeture du script dans $i secondes" -NoNewline
@@ -470,8 +527,8 @@ function exit_no_error {
 
     Write-Host @" 
 
-Merci beaucoup d'avoir utilisé ce script. 
-    
+Merci beaucoup d'avoir utilisé ce script.
+
 Contactez-moi pour toute demande ou incident : 
     - Par mail : landry.gonzalez@gmail.com
     - Sur Github : https://github.com/landrygonzalez
