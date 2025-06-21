@@ -1,7 +1,10 @@
 # Déclaration des variables.
-$dns_primaire = "9.9.9.9"
-$dns_secondaire = "149.112.112.112"
+#☺$dns_primaire = "9.9.9.9"
+#$dns_secondaire = "149.112.112.112"
 # Les DNS ci-dessus sont ceux de Quad9 : https://quad9.net/fr/service/service-addresses-and-features
+$dns_primaire = "193.110.81.0"
+$dns_secondaire = "185.253.5.0"
+# Les DNS ci-dessus sont ceux de DNS EU : https://www.dns0.eu/fr
 
 # Récupérer les index des interfaces UP.
 $interfaces_up = Get-NetAdapter -Name * | Where-Object Status -match "Up"
