@@ -18,7 +18,7 @@
     https://github.com/landrygonzalez/Configuration-automatique-d-un-desktop-windows-linux/
 #>
 
-
+l
 ################################
 # I. DECLARATION DES VARIABLES #
 ################################

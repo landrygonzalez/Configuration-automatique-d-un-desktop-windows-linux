@@ -601,6 +601,8 @@ function main {
     #exit 0
 }
 
+hello
+
 main
 
 #Stop-Transcript
